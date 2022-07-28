@@ -1,0 +1,331 @@
+$integration: http://ibm.com/appconnect/integration/v2/integrationFile
+integration:
+  type: api
+  trigger-interfaces:
+    trigger-interface-1:
+      triggers:
+        syncreqclassMxReqClass:
+          assembly:
+            $ref: '#/integration/assemblies/assembly-1'
+          input-context:
+            data: triReqClass
+          output-context:
+            data: mxReqClass
+      options:
+        resources:
+          - business-object: triReqClass
+            model:
+              $ref: '#/models/triReqClass'
+            triggers: {}
+          - business-object: mxReqClass
+            model:
+              $ref: '#/models/mxReqClass'
+            triggers:
+              syncreqclass: syncreqclassMxReqClass
+      type: api-trigger
+  action-interfaces:
+    action-interface-2:
+      type: api-action
+      business-object: request
+      connector-type: http
+      account-name: PLUSTTogas-SecGW
+      actions:
+        INVOKE: {}
+  assemblies:
+    assembly-1:
+      assembly:
+        execute:
+          - parse:
+              name: JSON Parser Parse
+              parse-format: json
+              source:
+                template: '{{$Request}}'
+                input:
+                  - variable: Request
+                    $ref: '#/trigger/payload'
+                  - variable: api
+                    $ref: '#/trigger/api/parameters'
+                  - variable: flowDetails
+                    $ref: '#/flowDetails'
+              sample-data: |-
+                {
+                   "data":[
+                      {
+                         "recordId":135534873,
+                         "boId":10002030,
+                         "Hierarchy Path":"\\Classifications\\Request Class\\Sample-Request-Class",
+                         "ID":"1000193",
+                         "Name":"Sample-Request-Class"
+                      }
+                   ],
+                   "continueToken":"",
+                   "header":[
+                      "ID",
+                      "Name",
+                      "Hierarchy Path"
+                   ],
+                   "totalRows":1
+                }
+              output-schema:
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        recordId:
+                          type: number
+                        boId:
+                          type: number
+                        Hierarchy Path:
+                          type: string
+                        ID:
+                          type: string
+                        Name:
+                          type: string
+                  continueToken:
+                    type: string
+                  header:
+                    type: array
+                    items:
+                      type: string
+                  totalRows:
+                    type: number
+                title: Parsed JSON
+          - set-variable:
+              name: Set variable
+              map:
+                $map: http://ibm.com/appconnect/map/v1
+                customSchemas:
+                  properties.`variable`:
+                    type: object
+                    properties:
+                      mxSRClass:
+                        type: object
+                        properties:
+                          _action:
+                            type: string
+                          domainid:
+                            type: string
+                          alndomain:
+                            type: array
+                            items:
+                              type: object
+                              properties: {}
+                input:
+                  - variable: Foreachitem
+                    $ref: '#/block/For each/current-item'
+                  - variable: Request
+                    $ref: '#/trigger/payload'
+                  - variable: api
+                    $ref: '#/trigger/api/parameters'
+                  - variable: JSONParserParse
+                    $ref: '#/node-output/JSON Parser Parse/response/payload'
+                  - variable: flowDetails
+                    $ref: '#/flowDetails'
+                mappings:
+                  - variable:
+                      mappings:
+                        - mxSRClass:
+                            mappings:
+                              - _action:
+                                  template: AddChange
+                              - alndomain:
+                                  expression: >-
+                                    $map($JSONParserParse.data, function($v, $i)
+                                    {    {        "value":
+                                    $v.recordId,                "description":
+                                    $length($v.'Hierarchy
+                                    Path')>100?$pad($substring($v."Hierarchy
+                                    Path" , -97), -100, "***"):$v."Hierarchy
+                                    Path"    }    })
+                              - domainid:
+                                  template: '{{$api.mxDomain}}'
+          - custom-action:
+              name: HTTP Invoke method
+              target:
+                $ref: '#/integration/action-interfaces/action-interface-2'
+              action: INVOKE
+              map:
+                customSchemas:
+                  properties.`requestHeaders`:
+                    type: object
+                    properties:
+                      Content-Type:
+                        type: string
+                      x-method-override:
+                        type: string
+                mappings:
+                  - continue2xx:
+                      expression: 'false'
+                  - method:
+                      template: POST
+                  - requestBody:
+                      template: '{{$Setvariable.variable.mxSRClass}}'
+                  - requestHeaders:
+                      mappings:
+                        - Content-Type:
+                            template: application/json
+                        - x-method-override:
+                            template: SYNC
+                  - url:
+                      template: '{{$api.mxUrl}}'
+                $map: http://ibm.com/appconnect/map/v1
+                input:
+                  - variable: Request
+                    $ref: '#/trigger/payload'
+                  - variable: api
+                    $ref: '#/trigger/api/parameters'
+                  - variable: JSONParserParse
+                    $ref: '#/node-output/JSON Parser Parse/response/payload'
+                  - variable: Setvariable
+                    $ref: '#/node-output/Set variable/response/payload'
+                  - variable: flowDetails
+                    $ref: '#/flowDetails'
+          - set-variable:
+              name: Set variable 2
+              map:
+                $map: http://ibm.com/appconnect/map/v1
+                customSchemas:
+                  properties.`variable`:
+                    type: object
+                    properties:
+                      triReqClassSent:
+                        type: object
+                        properties:
+                          mxPayload:
+                            type: object
+                            properties: {}
+                          mxResponse:
+                            type: object
+                            properties: {}
+                input:
+                  - variable: Foreachitem
+                    $ref: '#/block/For each/current-item'
+                  - variable: Request
+                    $ref: '#/trigger/payload'
+                  - variable: api
+                    $ref: '#/trigger/api/parameters'
+                  - variable: Setvariable
+                    $ref: '#/block/For each/node-output/Set variable/response/payload'
+                  - variable: HTTPInvokemethod
+                    $ref: >-
+                      #/block/For each/node-output/HTTP Invoke
+                      method/response/payload
+                  - variable: HTTPInvokemethodMetadata
+                    $ref: '#/block/For each/node-output/HTTP Invoke method/response'
+                  - variable: JSONParserParse
+                    $ref: '#/node-output/JSON Parser Parse/response/payload'
+                  - variable: flowDetails
+                    $ref: '#/flowDetails'
+                mappings:
+                  - variable:
+                      mappings:
+                        - triReqClassSent:
+                            mappings:
+                              - mxPayload:
+                                  expression: $Setvariable.variable.mxSRClass
+                              - mxResponse:
+                                  expression: $HTTPInvokemethodMetadata
+          - response:
+              name: response-1
+              reply-maps:
+                - title: mxReqClass successfully add custom operation
+                  status-code: 200
+                  map:
+                    $map: http://ibm.com/appconnect/map/v1
+                    input:
+                      - variable: Request
+                        $ref: '#/trigger/payload'
+                      - variable: api
+                        $ref: '#/trigger/api/parameters'
+                      - variable: JSONParserParse
+                        $ref: '#/node-output/JSON Parser Parse/response/payload'
+                      - variable: Setvariable
+                        $ref: '#/node-output/Set variable/response/payload'
+                      - variable: HTTPInvokemethod
+                        $ref: '#/node-output/HTTP Invoke method/response/payload'
+                      - variable: HTTPInvokemethodMetadata
+                        $ref: '#/node-output/HTTP Invoke method/response'
+                      - variable: Setvariable2
+                        $ref: '#/node-output/Set variable 2/response/payload'
+                      - variable: flowDetails
+                        $ref: '#/flowDetails'
+                    mappings:
+                      - reqClassSent:
+                          expression: $Setvariable2.variable.triReqClassSent
+                  input: []
+  name: PLUSITRIReqClass2MX
+models:
+  triReqClass:
+    name: triReqClass
+    properties:
+      dummyID:
+        required: false
+        id: true
+        type: string
+      data:
+        required: false
+        id: false
+        type:
+          - type: {}
+      continueToken:
+        required: false
+        id: false
+        type: string
+      header:
+        required: false
+        id: false
+        type:
+          - string
+      totalRows:
+        required: false
+        id: false
+        type: string
+    plural: triReqClass
+    description: ' '
+    operations: {}
+  mxReqClass:
+    name: mxReqClass
+    properties:
+      dummyID:
+        required: false
+        id: true
+        type: string
+      reqClassSent:
+        required: false
+        id: false
+        type: {}
+    plural: mxReqClass
+    description: ' '
+    operations:
+      syncreqclass: '#/integration/assemblies/assembly-1'
+    methods:
+      syncreqclass:
+        name: syncreqclass
+        display:
+          name: syncReqClass
+        accessType: WRITE
+        accepts:
+          - arg: data
+            type: triReqClass
+            http:
+              source: body
+          - arg: mxUrl
+            type: string
+            http:
+              source: query
+          - arg: mxDomain
+            type: string
+            http:
+              source: query
+        returns:
+          arg: data
+          type: mxReqClass
+          root: true
+        http:
+          verb: POST
+          path: /syncreqclass
+        description: inserting Tririga service request class to maximo
