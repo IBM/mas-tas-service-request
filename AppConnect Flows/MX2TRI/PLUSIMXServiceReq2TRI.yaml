@@ -1,0 +1,1060 @@
+$integration: http://ibm.com/appconnect/integration/v2/integrationFile
+integration:
+  type: api
+  trigger-interfaces:
+    trigger-interface-1:
+      triggers:
+        syncservicerequestTriServiceRequest:
+          assembly:
+            $ref: '#/integration/assemblies/assembly-1'
+          input-context:
+            data: mxServiceRequest
+          output-context:
+            data: triServiceRequest
+      options:
+        resources:
+          - business-object: mxServiceRequest
+            model:
+              $ref: '#/models/mxServiceRequest'
+            triggers: {}
+          - business-object: triServiceRequest
+            model:
+              $ref: '#/models/triServiceRequest'
+            triggers:
+              syncservicerequest: syncservicerequestTriServiceRequest
+      type: api-trigger
+  action-interfaces:
+    action-interface-2:
+      type: api-action
+      business-object: request
+      connector-type: http
+      account-name: mxtririga
+      actions:
+        INVOKE: {}
+    action-interface-4:
+      type: api-action
+      business-object: request
+      connector-type: http
+      account-name: trimaximo
+      actions:
+        INVOKE: {}
+  assemblies:
+    assembly-1:
+      assembly:
+        execute:
+          - set-variable:
+              name: Set variable
+              map:
+                $map: http://ibm.com/appconnect/map/v1
+                customSchemas:
+                  properties.`variable`:
+                    type: object
+                    properties:
+                      member:
+                        type: array
+                        items:
+                          type: object
+                          properties: {}
+                input:
+                  - variable: Request
+                    $ref: '#/trigger/payload'
+                  - variable: api
+                    $ref: '#/trigger/api/parameters'
+                  - variable: testClientPOSTtestclient
+                    $ref: '#/node-output/testClient POST testclient/response/payload'
+                  - variable: testClientPOSTtestclientMetadata
+                    $ref: '#/node-output/testClient POST testclient/response'
+                  - variable: flowDetails
+                    $ref: '#/flowDetails'
+                mappings:
+                  - variable:
+                      mappings:
+                        - member:
+                            expression: >-
+                              $count($Request.member) > 0 ? $Request.member:
+                              $append([],$$)
+          - parse:
+              name: JSON Parser Parse
+              parse-format: json
+              source:
+                template: '{{$Setvariable.variable}}'
+                input:
+                  - variable: Request
+                    $ref: '#/trigger/payload'
+                  - variable: api
+                    $ref: '#/trigger/api/parameters'
+                  - variable: Setvariable
+                    $ref: '#/node-output/Set variable/response/payload'
+                  - variable: flowDetails
+                    $ref: '#/flowDetails'
+              sample-data: |2-
+                 {
+                   "member":[
+                     {
+                   "_action": "Replace",
+                   "_id": "SR-1193",
+                   "actlabcost": 0.0,
+                   "actlabhrs": 0.0,
+                   "affecteddate": "2022-02-20T22:35:00-08:00",
+                   "affectedperson": "MXTRI007",
+                   "assetorgid": "TRIRIGA",
+                   "assetsiteid": "TRIMAIN",
+                   "changeby": "WILSON",
+                   "changedate": "2022-02-20T22:47:06-08:00",
+                   "class": "SR",
+                   "class_description": "Service Request",
+                   "createwomulti": "MULTI",
+                   "createwomulti_description": "Create Multi Records",
+                   "description": "Lights off summary",
+                   "description_longdescription": "Detailed summary<!-- RICH TEXT -->",
+                   "externalrecid": "1000063-0",
+                   "hasactivity": false,
+                   "hassolution": false,
+                   "historyflag": false,
+                   "href": "http:\/\/9.46.81.205:80\/maximo\/oslc\/os\/mxsr\/_U1IvMTE5Mw--",
+                   "inheritstatus": true,
+                   "isglobal": false,
+                   "isknownerror": false,
+                   "plusireqclassid": "1000191",
+                   "plusireqclassid_description": "\\Classifications\\Request Class\\test1",
+                   "plusiorgpath": 5426536756,
+                   "plusiorgpath_description": "\\Organizations\\Maximo Org",
+                   "plusilocpath": "1222132",
+                   "plusilocpath_description": "",
+                   "relatedtoglobal": false,
+                   "reportdate": "2022-02-20T22:35:52-08:00",
+                   "reportedby": "MXTRI007",
+                   "selfservsolaccess": true,
+                   "sitevisit": false,
+                   "status": "NEW",
+                   "status_description": "New",
+                   "statusdate": "2022-02-20T22:35:52-08:00",
+                   "template": false,
+                   "ticketid": "1193",
+                   "ticketuid": 429
+                }
+                   ]
+                }
+              output-schema:
+                $schema: http://json-schema.org/draft-04/schema#
+                type: object
+                properties:
+                  member:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        _action:
+                          type: string
+                        _id:
+                          type: string
+                        actlabcost:
+                          type: number
+                        actlabhrs:
+                          type: number
+                        affecteddate:
+                          type: string
+                        affectedperson:
+                          type: string
+                        assetorgid:
+                          type: string
+                        assetsiteid:
+                          type: string
+                        changeby:
+                          type: string
+                        changedate:
+                          type: string
+                        class:
+                          type: string
+                        class_description:
+                          type: string
+                        createwomulti:
+                          type: string
+                        createwomulti_description:
+                          type: string
+                        description:
+                          type: string
+                        description_longdescription:
+                          type: string
+                        externalrecid:
+                          type: string
+                        hasactivity:
+                          type: boolean
+                        hassolution:
+                          type: boolean
+                        historyflag:
+                          type: boolean
+                        href:
+                          type: string
+                        inheritstatus:
+                          type: boolean
+                        isglobal:
+                          type: boolean
+                        isknownerror:
+                          type: boolean
+                        plusireqclassid:
+                          type: string
+                        plusireqclassid_description:
+                          type: string
+                        plusiorgpath:
+                          type: number
+                        plusiorgpath_description:
+                          type: string
+                        plusilocpath:
+                          type: string
+                        plusilocpath_description:
+                          type: string
+                        relatedtoglobal:
+                          type: boolean
+                        reportdate:
+                          type: string
+                        reportedby:
+                          type: string
+                        selfservsolaccess:
+                          type: boolean
+                        sitevisit:
+                          type: boolean
+                        status:
+                          type: string
+                        status_description:
+                          type: string
+                        statusdate:
+                          type: string
+                        template:
+                          type: boolean
+                        ticketid:
+                          type: string
+                        ticketuid:
+                          type: number
+                title: Parsed JSON
+          - for-each:
+              name: For each
+              assembly:
+                $ref: '#/integration/assemblies/assembly-2'
+              source:
+                expression: $JSONParserParse.member
+                input:
+                  - variable: Request
+                    $ref: '#/trigger/payload'
+                  - variable: api
+                    $ref: '#/trigger/api/parameters'
+                  - variable: Setvariable
+                    $ref: '#/node-output/Set variable/response/payload'
+                  - variable: JSONParserParse
+                    $ref: '#/node-output/JSON Parser Parse/response/payload'
+                  - variable: flowDetails
+                    $ref: '#/flowDetails'
+              mode: parallel
+              continue-on-error: false
+              map:
+                $map: http://ibm.com/appconnect/map/v1
+                customSchemas:
+                  properties.`output`:
+                    type: object
+                    properties:
+                      serviceReqSent:
+                        type: array
+                        items:
+                          type: object
+                          properties: {}
+                input:
+                  - variable: Foreachitem
+                    $ref: '#/block/For each/current-item'
+                  - variable: Request
+                    $ref: '#/trigger/payload'
+                  - variable: api
+                    $ref: '#/trigger/api/parameters'
+                  - variable: Setvariable2
+                    $ref: >-
+                      #/block/For each/node-output/Set variable
+                      2/response/payload
+                  - variable: Setvariable3
+                    $ref: >-
+                      #/block/For each/node-output/Set variable
+                      3/response/payload
+                  - variable: HTTPInvokemethod
+                    $ref: >-
+                      #/block/For each/node-output/HTTP Invoke
+                      method/response/payload
+                  - variable: HTTPInvokemethodMetadata
+                    $ref: '#/block/For each/node-output/HTTP Invoke method/response'
+                  - variable: Setvariable4
+                    $ref: >-
+                      #/block/For each/node-output/Set variable
+                      4/response/payload
+                  - variable: Setvariable5
+                    $ref: >-
+                      #/block/For each/node-output/Set variable
+                      5/response/payload
+                  - variable: testClientPOSTtestclient2
+                    $ref: >-
+                      #/block/For each/node-output/testClient POST testclient
+                      2/response/payload
+                  - variable: testClientPOSTtestclient2Metadata
+                    $ref: >-
+                      #/block/For each/node-output/testClient POST testclient
+                      2/response
+                  - variable: testClientPOSTtestclient
+                    $ref: '#/node-output/testClient POST testclient/response/payload'
+                  - variable: testClientPOSTtestclientMetadata
+                    $ref: '#/node-output/testClient POST testclient/response'
+                  - variable: Setvariable
+                    $ref: '#/node-output/Set variable/response/payload'
+                  - variable: JSONParserParse
+                    $ref: '#/node-output/JSON Parser Parse/response/payload'
+                  - variable: flowDetails
+                    $ref: '#/flowDetails'
+                mappings:
+                  - output:
+                      mappings:
+                        - serviceReqSent:
+                            expression: $append([],$Setvariable4.variable.serviceReqSent)
+              display-name: Maximo Service Req
+          - response:
+              name: response-1
+              reply-maps:
+                - title: triServiceRequest successfully add custom operation
+                  status-code: 200
+                  map:
+                    $map: http://ibm.com/appconnect/map/v1
+                    input:
+                      - variable: Request
+                        $ref: '#/trigger/payload'
+                      - variable: api
+                        $ref: '#/trigger/api/parameters'
+                      - variable: testClientPOSTtestclient
+                        $ref: >-
+                          #/node-output/testClient POST
+                          testclient/response/payload
+                      - variable: testClientPOSTtestclientMetadata
+                        $ref: '#/node-output/testClient POST testclient/response'
+                      - variable: Setvariable
+                        $ref: '#/node-output/Set variable/response/payload'
+                      - variable: JSONParserParse
+                        $ref: '#/node-output/JSON Parser Parse/response/payload'
+                      - variable: Foreach
+                        $ref: '#/node-output/For each/response/payload'
+                      - variable: flowDetails
+                        $ref: '#/flowDetails'
+                    mappings:
+                      - serviceRequestSent:
+                          expression: $Foreach.output.serviceReqSent
+                  input: []
+    assembly-2:
+      assembly:
+        execute:
+          - set-variable:
+              name: Set variable 2
+              map:
+                $map: http://ibm.com/appconnect/map/v1
+                customSchemas:
+                  properties.`variable`:
+                    type: object
+                    properties:
+                      action:
+                        type: string
+                      triOperationTX:
+                        type: string
+                      triExternalReferenceTX:
+                        type: string
+                      triRequestForLI:
+                        type: string
+                      triRequestedForTX:
+                        type: string
+                      triRequestedByTX:
+                        type: string
+                      triRequestClassCL:
+                        type: string
+                      triBuildingTX:
+                        type: string
+                      triFloorTX:
+                        type: string
+                      triSpaceTX:
+                        type: string
+                      triDescriptionTX:
+                        type: string
+                      triCustomerOrgTX:
+                        type: string
+                      triAssociatedRecordLR:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            action:
+                              type: string
+                            triNameTX:
+                              type: string
+                            triDescriptionTX:
+                              type: string
+                      triIdTX:
+                        type: string
+                      triCustomerOrgRecordIDTX:
+                        type: string
+                      triRequestClassRecordIDTX:
+                        type: string
+                      triSpaceRecordIDTX:
+                        type: string
+                input:
+                  - variable: Foreachitem
+                    $ref: '#/block/For each/current-item'
+                  - variable: Request
+                    $ref: '#/trigger/payload'
+                  - variable: api
+                    $ref: '#/trigger/api/parameters'
+                  - variable: Setvariable
+                    $ref: '#/node-output/Set variable/response/payload'
+                  - variable: JSONParserParse
+                    $ref: '#/node-output/JSON Parser Parse/response/payload'
+                  - variable: flowDetails
+                    $ref: '#/flowDetails'
+                mappings:
+                  - variable:
+                      mappings:
+                        - action:
+                            template: Create Draft
+                        - triCustomerOrgRecordIDTX:
+                            template: '{{$Foreachitem.plusiorgpath}}'
+                        - triCustomerOrgTX:
+                            template: '{{$Foreachitem.plusiorgpath_description}}'
+                        - triDescriptionTX:
+                            template: >-
+                              {{$Foreachitem.description}} [mxclassification:
+                              {{$Foreachitem.hierarchypath}}]
+                        - triExternalReferenceTX:
+                            template: >-
+                              {{$boolean($Foreachitem.externalrecid)?$Foreachitem.externalrecid
+                              :$Foreachitem.ticketid}}
+                        - triIdTX:
+                            template: >-
+                              {{$boolean($Foreachitem.externalrecid)?$Foreachitem.externalrecid}}
+                        - triOperationTX:
+                            template: >-
+                              {{$Foreachitem._action="Delete"?"Retire":"Create"}}
+                        - triRequestClassCL:
+                            template: >-
+                              {{$split($Foreachitem.plusireqclassid_description,
+                              "\\")[-1]}}
+                        - triRequestClassRecordIDTX:
+                            template: '{{$Foreachitem.plusireqclassid}}'
+                        - triRequestForLI:
+                            template: >-
+                              {{$Foreachitem.affectedperson=$Foreachitem.reportedby?"Me":"Someone
+                              Else"}}
+                        - triRequestedByTX:
+                            template: '{{$Foreachitem.reportedby}}'
+                        - triRequestedForTX:
+                            template: '{{$Foreachitem.affectedperson}}'
+                        - triSpaceRecordIDTX:
+                            template: '{{$Foreachitem.plusilocpath}}'
+          - set-variable:
+              name: Set variable 3
+              map:
+                $map: http://ibm.com/appconnect/map/v1
+                customSchemas:
+                  properties.`variable`:
+                    type: object
+                    properties:
+                      triServiceRequest:
+                        type: object
+                        properties: {}
+                input:
+                  - variable: Foreachitem
+                    $ref: '#/block/For each/current-item'
+                  - variable: Request
+                    $ref: '#/trigger/payload'
+                  - variable: api
+                    $ref: '#/trigger/api/parameters'
+                  - variable: Setvariable2
+                    $ref: >-
+                      #/block/For each/node-output/Set variable
+                      2/response/payload
+                  - variable: testClientPOSTtestclient
+                    $ref: '#/node-output/testClient POST testclient/response/payload'
+                  - variable: testClientPOSTtestclientMetadata
+                    $ref: '#/node-output/testClient POST testclient/response'
+                  - variable: Setvariable
+                    $ref: '#/node-output/Set variable/response/payload'
+                  - variable: JSONParserParse
+                    $ref: '#/node-output/JSON Parser Parse/response/payload'
+                  - variable: flowDetails
+                    $ref: '#/flowDetails'
+                mappings:
+                  - variable:
+                      mappings:
+                        - triServiceRequest:
+                            expression: >-
+                              (    $ns:= "spi:";    $applyNS := function($prop)
+                              {        $type($prop) = "object" ?          
+                              $count($keys($prop)) > 0 ?           $applyNSObj
+                              := $each($prop, function($v, $k) {               
+                              $type($v) = "object"  or $type($v) = "array" ?
+                              {$ns & $k: $applyNS($v)} :                 {$ns &
+                              $k : $v}                }) ~> $merge() : {}    
+                              :        $type($prop) = "array" ?           
+                              $count($prop) > 0 ?            $applyNSArr :=
+                              $map($prop, function($v){                $type($v)
+                              = "object"  or $type($v) = "array" ? $applyNS($v)
+                              : $v            })[] : []    };   
+                              $sift($applyNS($Setvariable2.variable),function($v){$boolean($v)});)
+          - custom-action:
+              name: HTTP Invoke method
+              target:
+                $ref: '#/integration/action-interfaces/action-interface-2'
+              action: INVOKE
+              map:
+                customSchemas:
+                  properties.`requestHeaders`:
+                    type: object
+                    properties:
+                      Content-Type:
+                        type: string
+                      Properties:
+                        type: string
+                mappings:
+                  - continue2xx:
+                      expression: 'false'
+                  - method:
+                      template: POST
+                  - requestBody:
+                      template: '{{$Setvariable3.variable.triServiceRequest}}'
+                  - requestHeaders:
+                      mappings:
+                        - Content-Type:
+                            template: application/json
+                        - Properties:
+                            template: spi:triTRIRIGAIDTX,spi:triUserMessageTX
+                  - url:
+                      template: '{{$api.triUrl}}'
+                $map: http://ibm.com/appconnect/map/v1
+                input:
+                  - variable: Foreachitem
+                    $ref: '#/block/For each/current-item'
+                  - variable: Request
+                    $ref: '#/trigger/payload'
+                  - variable: api
+                    $ref: '#/trigger/api/parameters'
+                  - variable: Setvariable2
+                    $ref: >-
+                      #/block/For each/node-output/Set variable
+                      2/response/payload
+                  - variable: Setvariable3
+                    $ref: >-
+                      #/block/For each/node-output/Set variable
+                      3/response/payload
+                  - variable: testClientPOSTtestclient4
+                    $ref: >-
+                      #/block/For each/node-output/testClient POST testclient
+                      4/response/payload
+                  - variable: testClientPOSTtestclient4Metadata
+                    $ref: >-
+                      #/block/For each/node-output/testClient POST testclient
+                      4/response
+                  - variable: testClientPOSTtestclient
+                    $ref: '#/node-output/testClient POST testclient/response/payload'
+                  - variable: testClientPOSTtestclientMetadata
+                    $ref: '#/node-output/testClient POST testclient/response'
+                  - variable: Setvariable
+                    $ref: '#/node-output/Set variable/response/payload'
+                  - variable: JSONParserParse
+                    $ref: '#/node-output/JSON Parser Parse/response/payload'
+                  - variable: flowDetails
+                    $ref: '#/flowDetails'
+          - set-variable:
+              name: Set variable 4
+              map:
+                $map: http://ibm.com/appconnect/map/v1
+                customSchemas:
+                  properties.`variable`:
+                    type: object
+                    properties:
+                      serviceReqSent:
+                        type: object
+                        properties:
+                          triPayload:
+                            type: object
+                            properties: {}
+                          triResponse:
+                            type: object
+                            properties: {}
+                input:
+                  - variable: Foreachitem
+                    $ref: '#/block/For each/current-item'
+                  - variable: Request
+                    $ref: '#/trigger/payload'
+                  - variable: api
+                    $ref: '#/trigger/api/parameters'
+                  - variable: Setvariable2
+                    $ref: >-
+                      #/block/For each/node-output/Set variable
+                      2/response/payload
+                  - variable: Setvariable3
+                    $ref: >-
+                      #/block/For each/node-output/Set variable
+                      3/response/payload
+                  - variable: HTTPInvokemethod
+                    $ref: >-
+                      #/block/For each/node-output/HTTP Invoke
+                      method/response/payload
+                  - variable: HTTPInvokemethodMetadata
+                    $ref: '#/block/For each/node-output/HTTP Invoke method/response'
+                  - variable: testClientPOSTtestclient
+                    $ref: '#/node-output/testClient POST testclient/response/payload'
+                  - variable: testClientPOSTtestclientMetadata
+                    $ref: '#/node-output/testClient POST testclient/response'
+                  - variable: Setvariable
+                    $ref: '#/node-output/Set variable/response/payload'
+                  - variable: JSONParserParse
+                    $ref: '#/node-output/JSON Parser Parse/response/payload'
+                  - variable: flowDetails
+                    $ref: '#/flowDetails'
+                mappings:
+                  - variable:
+                      mappings:
+                        - serviceReqSent:
+                            mappings:
+                              - triPayload:
+                                  expression: $Setvariable3.variable.triServiceRequest
+                              - triResponse:
+                                  expression: $HTTPInvokemethodMetadata
+          - set-variable:
+              name: Set variable 5
+              map:
+                $map: http://ibm.com/appconnect/map/v1
+                customSchemas:
+                  properties.`variable`:
+                    type: object
+                    properties:
+                      triRecordId:
+                        type: object
+                        properties: {}
+                input:
+                  - variable: Foreachitem
+                    $ref: '#/block/For each/current-item'
+                  - variable: Request
+                    $ref: '#/trigger/payload'
+                  - variable: api
+                    $ref: '#/trigger/api/parameters'
+                  - variable: Setvariable2
+                    $ref: >-
+                      #/block/For each/node-output/Set variable
+                      2/response/payload
+                  - variable: Setvariable3
+                    $ref: >-
+                      #/block/For each/node-output/Set variable
+                      3/response/payload
+                  - variable: testClientPOSTtestclient4
+                    $ref: >-
+                      #/block/For each/node-output/testClient POST testclient
+                      4/response/payload
+                  - variable: testClientPOSTtestclient4Metadata
+                    $ref: >-
+                      #/block/For each/node-output/testClient POST testclient
+                      4/response
+                  - variable: HTTPInvokemethod
+                    $ref: >-
+                      #/block/For each/node-output/HTTP Invoke
+                      method/response/payload
+                  - variable: HTTPInvokemethodMetadata
+                    $ref: '#/block/For each/node-output/HTTP Invoke method/response'
+                  - variable: Setvariable4
+                    $ref: >-
+                      #/block/For each/node-output/Set variable
+                      4/response/payload
+                  - variable: testClientPOSTtestclient
+                    $ref: '#/node-output/testClient POST testclient/response/payload'
+                  - variable: testClientPOSTtestclientMetadata
+                    $ref: '#/node-output/testClient POST testclient/response'
+                  - variable: Setvariable
+                    $ref: '#/node-output/Set variable/response/payload'
+                  - variable: JSONParserParse
+                    $ref: '#/node-output/JSON Parser Parse/response/payload'
+                  - variable: flowDetails
+                    $ref: '#/flowDetails'
+                mappings:
+                  - variable:
+                      mappings:
+                        - triRecordId:
+                            expression: >-
+                              $eval($Setvariable4.variable.serviceReqSent.triResponse.payload.responseBody)."spi:triTRIRIGAIDTX"
+          - if:
+              name: If
+              input:
+                - variable: Foreachitem
+                  $ref: '#/block/For each/current-item'
+                - variable: Request
+                  $ref: '#/trigger/payload'
+                - variable: api
+                  $ref: '#/trigger/api/parameters'
+                - variable: Setvariable2
+                  $ref: '#/block/For each/node-output/Set variable 2/response/payload'
+                - variable: Setvariable3
+                  $ref: '#/block/For each/node-output/Set variable 3/response/payload'
+                - variable: testClientPOSTtestclient4
+                  $ref: >-
+                    #/block/For each/node-output/testClient POST testclient
+                    4/response/payload
+                - variable: testClientPOSTtestclient4Metadata
+                  $ref: >-
+                    #/block/For each/node-output/testClient POST testclient
+                    4/response
+                - variable: HTTPInvokemethod
+                  $ref: >-
+                    #/block/For each/node-output/HTTP Invoke
+                    method/response/payload
+                - variable: HTTPInvokemethodMetadata
+                  $ref: '#/block/For each/node-output/HTTP Invoke method/response'
+                - variable: Setvariable4
+                  $ref: '#/block/For each/node-output/Set variable 4/response/payload'
+                - variable: Setvariable5
+                  $ref: '#/block/For each/node-output/Set variable 5/response/payload'
+                - variable: testClientPOSTtestclient2
+                  $ref: >-
+                    #/block/For each/node-output/testClient POST testclient
+                    2/response/payload
+                - variable: testClientPOSTtestclient2Metadata
+                  $ref: >-
+                    #/block/For each/node-output/testClient POST testclient
+                    2/response
+                - variable: testClientPOSTtestclient
+                  $ref: '#/node-output/testClient POST testclient/response/payload'
+                - variable: testClientPOSTtestclientMetadata
+                  $ref: '#/node-output/testClient POST testclient/response'
+                - variable: Setvariable
+                  $ref: '#/node-output/Set variable/response/payload'
+                - variable: JSONParserParse
+                  $ref: '#/node-output/JSON Parser Parse/response/payload'
+                - variable: flowDetails
+                  $ref: '#/flowDetails'
+              branch:
+                - condition:
+                    and:
+                      - '{{$boolean($Setvariable5.variable.triRecordId)}}':
+                          '=': 'true'
+                      - '{{$Setvariable2.variable.triExternalReferenceTX}}': '{{$Foreachitem.ticketid}}'
+                  execute:
+                    - set-variable:
+                        name: Set variable 6
+                        map:
+                          $map: http://ibm.com/appconnect/map/v1
+                          customSchemas:
+                            properties.`variable`:
+                              type: object
+                              properties:
+                                mxServiceReq:
+                                  type: object
+                                  properties:
+                                    ticketid:
+                                      type: string
+                                    externalrecid:
+                                      type: string
+                                    _action:
+                                      type: string
+                                    class:
+                                      type: string
+                          input:
+                            - variable: Foreachitem
+                              $ref: '#/block/For each/current-item'
+                            - variable: Request
+                              $ref: '#/trigger/payload'
+                            - variable: api
+                              $ref: '#/trigger/api/parameters'
+                            - variable: Setvariable2
+                              $ref: >-
+                                #/block/For each/node-output/Set variable
+                                2/response/payload
+                            - variable: Setvariable3
+                              $ref: >-
+                                #/block/For each/node-output/Set variable
+                                3/response/payload
+                            - variable: testClientPOSTtestclient4
+                              $ref: >-
+                                #/block/For each/node-output/testClient POST
+                                testclient 4/response/payload
+                            - variable: testClientPOSTtestclient4Metadata
+                              $ref: >-
+                                #/block/For each/node-output/testClient POST
+                                testclient 4/response
+                            - variable: HTTPInvokemethod
+                              $ref: >-
+                                #/block/For each/node-output/HTTP Invoke
+                                method/response/payload
+                            - variable: HTTPInvokemethodMetadata
+                              $ref: >-
+                                #/block/For each/node-output/HTTP Invoke
+                                method/response
+                            - variable: Setvariable4
+                              $ref: >-
+                                #/block/For each/node-output/Set variable
+                                4/response/payload
+                            - variable: Setvariable5
+                              $ref: >-
+                                #/block/For each/node-output/Set variable
+                                5/response/payload
+                            - variable: testClientPOSTtestclient2
+                              $ref: >-
+                                #/block/For each/node-output/testClient POST
+                                testclient 2/response/payload
+                            - variable: testClientPOSTtestclient2Metadata
+                              $ref: >-
+                                #/block/For each/node-output/testClient POST
+                                testclient 2/response
+                            - variable: testClientPOSTtestclient
+                              $ref: >-
+                                #/node-output/testClient POST
+                                testclient/response/payload
+                            - variable: testClientPOSTtestclientMetadata
+                              $ref: >-
+                                #/node-output/testClient POST
+                                testclient/response
+                            - variable: Setvariable
+                              $ref: '#/node-output/Set variable/response/payload'
+                            - variable: JSONParserParse
+                              $ref: '#/node-output/JSON Parser Parse/response/payload'
+                            - variable: flowDetails
+                              $ref: '#/flowDetails'
+                          mappings:
+                            - variable:
+                                mappings:
+                                  - mxServiceReq:
+                                      mappings:
+                                        - _action:
+                                            template: AddChange
+                                        - class:
+                                            template: SR
+                                        - externalrecid:
+                                            template: '{{$Setvariable5.variable.triRecordId}}'
+                                        - ticketid:
+                                            template: '{{$Foreachitem.ticketid}}'
+                    - custom-action:
+                        name: HTTP Invoke method 2
+                        target:
+                          $ref: '#/integration/action-interfaces/action-interface-4'
+                        action: INVOKE
+                        map:
+                          customSchemas:
+                            properties.`requestHeaders`:
+                              type: object
+                              properties:
+                                Content-Type:
+                                  type: string
+                                x-method-override:
+                                  type: string
+                          mappings:
+                            - continue2xx:
+                                expression: 'false'
+                            - method:
+                                template: POST
+                            - requestBody:
+                                template: '{{$Setvariable6.variable.mxServiceReq}}'
+                            - requestHeaders:
+                                mappings:
+                                  - Content-Type:
+                                      template: application/json
+                                  - x-method-override:
+                                      template: SYNC
+                            - url:
+                                template: '{{$api.mxUrl}}'
+                          $map: http://ibm.com/appconnect/map/v1
+                          input:
+                            - variable: Foreachitem
+                              $ref: '#/block/For each/current-item'
+                            - variable: Request
+                              $ref: '#/trigger/payload'
+                            - variable: api
+                              $ref: '#/trigger/api/parameters'
+                            - variable: Setvariable6
+                              $ref: >-
+                                #/block/If/node-output/Set variable
+                                6/response/payload
+                            - variable: Setvariable2
+                              $ref: >-
+                                #/block/For each/node-output/Set variable
+                                2/response/payload
+                            - variable: Setvariable3
+                              $ref: >-
+                                #/block/For each/node-output/Set variable
+                                3/response/payload
+                            - variable: HTTPInvokemethod
+                              $ref: >-
+                                #/block/For each/node-output/HTTP Invoke
+                                method/response/payload
+                            - variable: HTTPInvokemethodMetadata
+                              $ref: >-
+                                #/block/For each/node-output/HTTP Invoke
+                                method/response
+                            - variable: Setvariable4
+                              $ref: >-
+                                #/block/For each/node-output/Set variable
+                                4/response/payload
+                            - variable: Setvariable5
+                              $ref: >-
+                                #/block/For each/node-output/Set variable
+                                5/response/payload
+                            - variable: Setvariable
+                              $ref: '#/node-output/Set variable/response/payload'
+                            - variable: JSONParserParse
+                              $ref: '#/node-output/JSON Parser Parse/response/payload'
+                            - variable: flowDetails
+                              $ref: '#/flowDetails'
+                    - set-variable:
+                        name: Set variable 7
+                        map:
+                          $map: http://ibm.com/appconnect/map/v1
+                          customSchemas:
+                            properties.`variable`:
+                              type: object
+                              properties:
+                                mxUpdtaeServiceReq:
+                                  type: object
+                                  properties:
+                                    datsent:
+                                      type: object
+                                      properties: {}
+                                    mxresponse:
+                                      type: object
+                                      properties: {}
+                          input:
+                            - variable: Foreachitem
+                              $ref: '#/block/For each/current-item'
+                            - variable: Request
+                              $ref: '#/trigger/payload'
+                            - variable: api
+                              $ref: '#/trigger/api/parameters'
+                            - variable: Setvariable6
+                              $ref: >-
+                                #/block/If/node-output/Set variable
+                                6/response/payload
+                            - variable: HTTPInvokemethod2
+                              $ref: >-
+                                #/block/If/node-output/HTTP Invoke method
+                                2/response/payload
+                            - variable: HTTPInvokemethod2Metadata
+                              $ref: >-
+                                #/block/If/node-output/HTTP Invoke method
+                                2/response
+                            - variable: Setvariable2
+                              $ref: >-
+                                #/block/For each/node-output/Set variable
+                                2/response/payload
+                            - variable: Setvariable3
+                              $ref: >-
+                                #/block/For each/node-output/Set variable
+                                3/response/payload
+                            - variable: testClientPOSTtestclient4
+                              $ref: >-
+                                #/block/For each/node-output/testClient POST
+                                testclient 4/response/payload
+                            - variable: testClientPOSTtestclient4Metadata
+                              $ref: >-
+                                #/block/For each/node-output/testClient POST
+                                testclient 4/response
+                            - variable: HTTPInvokemethod
+                              $ref: >-
+                                #/block/For each/node-output/HTTP Invoke
+                                method/response/payload
+                            - variable: HTTPInvokemethodMetadata
+                              $ref: >-
+                                #/block/For each/node-output/HTTP Invoke
+                                method/response
+                            - variable: Setvariable4
+                              $ref: >-
+                                #/block/For each/node-output/Set variable
+                                4/response/payload
+                            - variable: Setvariable5
+                              $ref: >-
+                                #/block/For each/node-output/Set variable
+                                5/response/payload
+                            - variable: testClientPOSTtestclient2
+                              $ref: >-
+                                #/block/For each/node-output/testClient POST
+                                testclient 2/response/payload
+                            - variable: testClientPOSTtestclient2Metadata
+                              $ref: >-
+                                #/block/For each/node-output/testClient POST
+                                testclient 2/response
+                            - variable: testClientPOSTtestclient
+                              $ref: >-
+                                #/node-output/testClient POST
+                                testclient/response/payload
+                            - variable: testClientPOSTtestclientMetadata
+                              $ref: >-
+                                #/node-output/testClient POST
+                                testclient/response
+                            - variable: Setvariable
+                              $ref: '#/node-output/Set variable/response/payload'
+                            - variable: JSONParserParse
+                              $ref: '#/node-output/JSON Parser Parse/response/payload'
+                            - variable: flowDetails
+                              $ref: '#/flowDetails'
+                          mappings:
+                            - variable:
+                                mappings:
+                                  - mxUpdtaeServiceReq:
+                                      mappings:
+                                        - datsent:
+                                            expression: $Setvariable6.variable.mxServiceReq
+                                        - mxresponse:
+                                            expression: $HTTPInvokemethod2Metadata
+              else:
+                execute: []
+              output-schema: {}
+  name: PLUSIMXServiceReq2TRI
+models:
+  mxServiceRequest:
+    name: mxServiceRequest
+    properties:
+      dummyID:
+        required: false
+        id: true
+        type: string
+      member:
+        required: false
+        id: false
+        type:
+          - type: {}
+    plural: mxServiceRequest
+    description: ' '
+    operations: {}
+  triServiceRequest:
+    name: triServiceRequest
+    properties:
+      dummyID:
+        required: false
+        id: true
+        type: string
+      serviceRequestSent:
+        required: false
+        id: false
+        type:
+          - type: {}
+    plural: triServiceRequest
+    description: ' '
+    operations:
+      syncservicerequest: '#/integration/assemblies/assembly-1'
+    methods:
+      syncservicerequest:
+        name: syncservicerequest
+        display:
+          name: syncServiceRequest
+        accessType: WRITE
+        accepts:
+          - arg: data
+            type: mxServiceRequest
+            http:
+              source: body
+          - arg: triUrl
+            type: string
+            http:
+              source: query
+          - arg: mxUrl
+            type: string
+            http:
+              source: query
+        returns:
+          arg: data
+          type: triServiceRequest
+          root: true
+        http:
+          verb: POST
+          path: /syncservicerequest
+        description: Send service request's from maximo to tririga
